@@ -7,6 +7,7 @@ const auth = require('../middleware/auth');
 
 // user management
 router.get('/users', auth, adminController.getAllUsers);
+router.put('/users/:userId/activate', auth, adminController.activateUser);
 router.put('/users/:userId/deactivate', auth, adminController.deactivateUser);
 
 

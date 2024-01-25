@@ -9,8 +9,7 @@ const Vendor =require('../models/vendor')
 
 const getAllUsers =async(req,res)=>{
  try {
-    let user='user'
-    const getusers = await User.find().select({role:user}).select('-password')
+    const getusers = await User.find({ role: 'user' }).select('-password');
     res.json(getusers)
  } catch (err) {
     console.error(err.message)
@@ -22,8 +21,21 @@ const getAllUsers =async(req,res)=>{
 const deactivateUser = async(req,res)=>{
 const userId   =  req.params.userId;
 try {
-    await User.findByIdAndRemove(userId);
-    res.json({ msg: 'User deactivated or deleted' });
+    await User.findByIdAndUpdate(userId, { isApproved: false }, { new: true });
+    res.json({ msg: 'User deactivated ' });
+    
+} catch (err) {
+    console.error(err.message)
+    res.status(500).json({msg:'Server error'})
+}
+
+}
+
+const activateUser = async(req,res)=>{
+const userId   =  req.params.userId;
+try {
+    await User.findByIdAndUpdate(userId, { isApproved: true }, { new: true });
+    res.json({ msg: 'User activated ' });
     
 } catch (err) {
     console.error(err.message)
@@ -39,8 +51,7 @@ try {
 
 const getAllVendors =async(req,res)=>{
  try {
-    let vendor='vendor'
-    const getvendors = await User.find().select({role:vendor}).select('-password')
+    const getvendors = await User.find({ role: 'vendor' }).select('-password');
     res.json(getvendors)
  } catch (err) {
     console.error(err.message)
@@ -150,20 +161,55 @@ const getAllOrders =async(req,res)=>{
 const shippedOrderStatus =async(req,res)=>{
 const orderId = req.params.orderId;
 try {
-await Order.findByIdAndUpdate(orderId,{orderstatus:{ enum:['shipped']}})
-        res.json(orderId+`Order is shipped`)
+const updatedOrder = await Order.findByIdAndUpdate(orderId,{orderstatus:'shipped'})
+if(!updatedOrder){
+    return res.status(404).json({ msg: 'Order not found' });
+
+}        
+
+const product = await Product.findById(updatedOrder.productId);
+
+res.json({
+    orderId,
+    orderStatus: 'shipped',
+    productDetails: product,
+    message: 'Order is shipped'
+
+})
     }
     catch (err) {
         console.error(err.message)
         res.status(500).json({msg:'server error'})
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 const cancelOrderStatus =async(req,res)=>{
     const orderId = req.params.orderId;
     try {
-await Order.findByIdAndUpdate(orderId,{orderstatus:{ enum:['cancel']}})
-        res.json(orderId+`Order is cancel`)
-            }
+const updatedOrder= await Order.findByIdAndUpdate(orderId,{orderstatus:' cancel'})
+if (!updatedOrder) {
+    return res.status(404).json({ msg: 'Order not found' });
+}       
+const product = await Product.findById(updatedOrder.productId);
+
+res.json({
+    orderId,
+    orderStatus: 'cancel',
+    productDetails: product,
+    message: 'Order is canceled'
+});            }
      catch (err) {
          console.error(err.message)
     res.status(500).json({msg:'server error'})
@@ -174,4 +220,4 @@ await Order.findByIdAndUpdate(orderId,{orderstatus:{ enum:['cancel']}})
 
 
 module.exports={getAllOrders,getAllProducts,getAllUsers,getAllVendors, 
-    deactivateUser , approveVendor , rejectVendor , approveProduct , rejectProduct , shippedOrderStatus  ,cancelOrderStatus}
+   activateUser, deactivateUser , approveVendor , rejectVendor , approveProduct , rejectProduct , shippedOrderStatus  ,cancelOrderStatus}
