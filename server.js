@@ -10,6 +10,7 @@ app.use(express.json());
 app.use('/api/auth',require('./routes/auth'))
 app.use('/api/vendor',require('./routes/vendor'))
 app.use('/api/products',require('./routes/user'))
+app.use('/api/admin',require('./routes/admin'))
 
 console.log('Sabr Rakho');
 
